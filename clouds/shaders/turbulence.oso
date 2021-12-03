@@ -1,0 +1,73 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.11.10
+# options: -o C:\Users\danie\AppData\Local\Temp\tmpj1tbl9ls.oso -IC:\Program Files\Blender Foundation\Blender 2.93\2.93\scripts\addons\cycles\shader
+shader turbulence
+param	color	in_color	1 1 1		%read{17,17} %write{2147483647,-1}
+param	float	Time	0		%read{11,11} %write{2147483647,-1}
+param	float	pixelsize	0.200000003		%read{2,2} %write{2147483647,-1}
+oparam	color	Turbulence	0.800000012 0.800000012 0.800000012		%read{2147483647,-1} %write{17,17}
+global	point	P	%read{0,0} %write{2147483647,-1}
+local	float	___368_pixelsizeClamped	%read{3,15} %write{2,3}
+local	float	___368_t	%read{8,16} %write{4,15}
+local	float	___368_scale	%read{8,15} %write{5,15}
+local	float	___368_n	%read{2147483647,-1} %write{6,6}
+local	point	Point	%read{8,15} %write{0,0}
+temp	float	$tmp1	%read{17,17} %write{16,16}
+const	string	$const1	"turbulence"		%read{1,1} %write{2147483647,-1}
+const	float	$const2	9.99999997e-07		%read{2,2} %write{2147483647,-1}
+const	float	$const3	0.999998987		%read{3,3} %write{2147483647,-1}
+const	int	$const4	0		%read{4,9} %write{2147483647,-1}
+const	int	$const5	1		%read{5,5} %write{2147483647,-1}
+const	float	$const6	0		%read{6,6} %write{2147483647,-1}
+temp	int	$tmp2	%read{8,15} %write{8,15}
+temp	int	$tmp3	%read{7,15} %write{8,15}
+temp	float	$tmp4	%read{8,15} %write{8,15}
+temp	float	$tmp5	%read{8,15} %write{8,15}
+const	string	$const7	"perlin"		%read{11,11} %write{2147483647,-1}
+temp	point	$tmp6	%read{8,15} %write{8,15}
+temp	float	$tmp7	%read{8,15} %write{8,15}
+const	float	$const9	2		%read{15,15} %write{2147483647,-1}
+code ___main___
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:28
+#     
+	assign		Point P 	%filename{"C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl"} %line{28} %argrw{"wr"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:31
+#     
+	functioncall	$const1 17 	%line{31} %argrw{"r"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:5
+#     pixelsizeClamped = min(pixelsizeClamped, 0.999999);
+	max		___368_pixelsizeClamped $const2 pixelsize 	%line{5} %argrw{"wrr"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:6
+#     
+	min		___368_pixelsizeClamped ___368_pixelsizeClamped $const3 	%line{6} %argrw{"wrr"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:9
+#     float scale = 1;
+	assign		___368_t $const4 	%line{9} %argrw{"wr"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:10
+# 
+	assign		___368_scale $const5 	%line{10} %argrw{"wr"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:12
+# 
+	assign		___368_n $const6 	%line{12} %argrw{"wr"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:14
+#         t += abs(noise("perlin", Point/scale, Time) * scale);
+	while		$tmp3 8 10 16 16 	%line{14} %argrw{"r"}
+	gt		$tmp2 ___368_scale ___368_pixelsizeClamped 	%argrw{"wrr"}
+	neq		$tmp3 $tmp2 $const4 	%argrw{"wrr"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:15
+#         scale /= 2;
+	div		$tmp6 Point ___368_scale 	%line{15} %argrw{"wrr"}
+	noise		$tmp5 $const7 $tmp6 Time 	%argrw{"wrrr"}
+	mul		$tmp7 $tmp5 ___368_scale 	%argrw{"wrr"}
+	abs		$tmp4 $tmp7 	%argrw{"wr"}
+	add		___368_t ___368_t $tmp4 	%argrw{"wrr"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:16
+#     }
+	div		___368_scale ___368_scale $const9 	%line{16} %argrw{"wrr"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:19
+# }
+	assign		$tmp1 ___368_t 	%line{19} %argrw{"wr"}
+# C:\\Users\\danie\\Documents\\GitHub\\CPSC479-Final-Project\\shaders\\turbulence.osl:31
+#     
+	mul		Turbulence in_color $tmp1 	%line{31} %argrw{"wrr"}
+	end
