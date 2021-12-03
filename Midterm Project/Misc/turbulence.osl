@@ -1,0 +1,31 @@
+float turbulence(point Point, float pixelsize, float Time)
+{
+    /* Ensure that the pixel size is between 0 and 1, not inclusive */
+    float pixelsizeClamped = max(0.000001, pixelsize);
+    pixelsizeClamped = min(pixelsizeClamped, 0.999999);
+    
+    /* Execute the turbulence algorithm from "An Image Synthesizer" */
+    float t = 0;
+    float scale = 1;
+
+    float n = 0.0;
+
+    while (scale > pixelsizeClamped) {
+        t += abs(noise("perlin", Point/scale, Time) * scale);
+        scale /= 2;
+    }
+    
+    return t;
+}
+
+shader turbulence(
+    color in_color = color(1.0, 1.0, 1.0),
+    float Time = 0.0,
+    float pixelsize = 0.2,
+    output color Turbulence = 0.8,)
+{
+    point Point = P;
+    
+    /* Perlin 4D Turbulence */
+    Turbulence = in_color * turbulence(Point, pixelsize, Time);
+}

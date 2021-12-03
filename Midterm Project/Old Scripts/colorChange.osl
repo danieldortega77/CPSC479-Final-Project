@@ -1,0 +1,5 @@
+shader colorChange(float fInputSeed=0, float saturation=1, float value=1, output color outColor=1) {
+    float hue = fInputSeed/250;
+    
+    outColor = color("hsv", hue, saturation, value);
+}

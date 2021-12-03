@@ -1,0 +1,68 @@
+float turbulence(point Point, float pixelsize, float Time)
+{
+    /* Ensure that the pixel size is between 0 and 1, not inclusive */
+    float pixelsizeClamped = max(0.000001, pixelsize);
+    pixelsizeClamped = min(pixelsizeClamped, 0.999999);
+    
+    /* Execute the turbulence algorithm from "An Image Synthesizer" */
+    float t = 0;
+    float scale = 1;
+
+    float n = 0.0;
+
+    while (scale > pixelsizeClamped) {
+        t += abs(noise("perlin", Point/scale, Time) * scale);
+        scale /= 2;
+    }
+    
+    return t;
+}
+
+color color_of_emission(float radius, float innerR, float outerR)
+{
+    // Interpolate radius between 0 and 1
+    float x = (radius - innerR) / (outerR - innerR);
+    float cutoff = 0.75;
+    float blend;
+    
+    color red = color(1.0, 0.0, 0.0);
+    color yellow = color(1.0, 1.0, 0.0);
+    color white = color(1.0, 1.0, 1.0);
+
+    color low, high;
+    if (x < cutoff) {
+        blend = smoothstep(0, cutoff, x);
+        low = red;
+        high = yellow;
+    } else {
+        blend = smoothstep(cutoff, 1, x);
+        low = yellow;
+        high = white;
+    }
+    return mix(low, high, blend);
+}
+
+color fire(point Point, float pixelsize, float Time, point center, float innerRadius, float outerRadius)
+{
+    vector v = (Point - center);
+    float radius = length(v);
+    float dr = turbulence(v, pixelsize, Time);
+    // float x = Point[1] + turbulence(Point, pixelsize, Time);
+    // float x = distance(Point, point(0,0,0)) + turbulence(Point, pixelsize, Time);
+    // return color_of_emission(radius + 10 * dr);
+    return color_of_emission(radius + 5 * dr, innerRadius, outerRadius);
+}
+
+shader fire(
+    float Time = 1.0,
+    float pixelsize = 0.2,
+    float innerRadius = 1.0,
+    float outerRadius = 2.0,
+    output color Fire = 0.8,
+    point center = point(0, 0, 0),)
+{
+    point Point = P;
+    
+    /* Perlin fire Texture */
+    Fire = fire(Point, pixelsize, Time, center, innerRadius, outerRadius);
+}

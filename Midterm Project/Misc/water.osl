@@ -1,0 +1,55 @@
+float turbulence(point Point, float pixelsize, float Time)
+{
+    /* Ensure that the pixel size is between 0 and 1, not inclusive */
+    float pixelsizeClamped = max(0.000001, pixelsize);
+    pixelsizeClamped = min(pixelsizeClamped, 0.999999);
+    
+    /* Execute the turbulence algorithm from "An Image Synthesizer" */
+    float t = 0;
+    float scale = 1;
+
+    float n = 0.0;
+
+    while (scale > pixelsizeClamped) {
+        t += abs(noise("perlin", Point/scale, Time) * scale);
+        scale /= 2;
+    }
+    
+    return t;
+}
+
+color scalar_to_color(float turb, color in_color_low, color in_color_mid, color in_color_high)
+{
+    float blend;
+    color low, high;
+    if (turb < 0.5) {
+        blend = smoothstep(0, 0.5, turb);
+        low = in_color_low;
+        high = in_color_mid;
+    } else {
+        blend = smoothstep(0.5, 1, turb);
+        low = in_color_mid;
+        high = in_color_high;
+    }
+    return mix(low, high, blend);
+}
+
+color water(point Point, float pixelsize, float Time, color in_color_low, color in_color_mid, color in_color_high)
+{
+    float turb = turbulence(Point, pixelsize, Time);
+    return scalar_to_color(turb, in_color_low, in_color_mid, in_color_high);
+}
+
+shader water(
+    color in_color_low = color(0.1, 0.919, 1.0),
+    color in_color_mid = color(0.022, 0.441, 1.0),
+    color in_color_high = color(0.0, 0.0, 0.634),
+    float Time = 0.0,
+    float pixelsize = 0.2,
+    output color Water = 0.8,)
+{
+    point Point = P;
+
+    /* Perlin water Texture */
+    Water = water(Point, pixelsize, Time, in_color_low, in_color_mid, in_color_high);
+}

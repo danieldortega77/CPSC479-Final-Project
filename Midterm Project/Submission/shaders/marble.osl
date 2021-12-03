@@ -1,0 +1,44 @@
+float turbulence(point Point, float pixelsize, float Time)
+{
+    /* Ensure that the pixel size is between 0 and 1, not inclusive */
+    float pixelsizeClamped = max(0.000001, pixelsize);
+    pixelsizeClamped = min(pixelsizeClamped, 0.999999);
+    
+    /* Execute the turbulence algorithm from "An Image Synthesizer" */
+    float t = 0;
+    float scale = 1;
+
+    float n = 0.0;
+
+    while (scale > pixelsizeClamped) {
+        t += abs(noise("perlin", Point/scale, Time) * scale);
+        scale /= 2;
+    }
+    
+    return t;
+}
+
+color scalar_to_color(color in_color, float x)
+{
+    return in_color + x;
+}
+
+color marble(point Point, float pixelsize, float Time, color in_color, float period)
+{
+    float x = Point[1] + turbulence(Point, pixelsize, Time);
+    // float x = distance(Point, point(0,0,0)) + turbulence(Point, pixelsize, Time);
+    return scalar_to_color(in_color, sin(x/period));
+}
+
+shader marble(
+    color in_color = color(0.0, 1.0, 0.0),
+    float Time = 0.0,
+    float pixelsize = 0.2,
+    float period = 1.0,
+    output color Marble = 0.8,)
+{
+    point Point = P;
+
+    /* Perlin marble Texture */
+    Marble = marble(Point, pixelsize, Time, in_color, period);
+}
