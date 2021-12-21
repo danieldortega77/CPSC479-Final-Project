@@ -23,9 +23,10 @@ shader turbulence(
     float Time = 0.0,
     float pixelsize = 0.2,
     point translation = point(0, 0, 0),
+    float scale = 1.0,
     output color Turbulence = 0.8,)
 {
-    point Point = P + translation;
+    point Point = P / scale + translation;
     
     /* Perlin 4D Turbulence */
     Turbulence = in_color * turbulence(Point, pixelsize, Time);

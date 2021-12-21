@@ -4,6 +4,7 @@ from bpy_extras.object_utils import AddObjectHelper
 
 from bpy.props import (
     FloatProperty,
+    FloatVectorProperty,
 )
 
 
@@ -43,14 +44,14 @@ def add_box(width, height, depth):
 class AddClouds(bpy.types.Operator, AddObjectHelper):
     """Add a simple cloud mesh"""
     bl_idname = "mesh.primitive_clouds_add"
-    bl_label = "Add Clouds"
+    bl_label = "Clouds"
     bl_options = {'REGISTER', 'UNDO'}
 
     width: FloatProperty(
         name="Width",
         description="Clouds Width",
         min=0.01, max=100.0,
-        default=1.0,
+        default=10.0,
     )
     height: FloatProperty(
         name="Height",
@@ -62,7 +63,30 @@ class AddClouds(bpy.types.Operator, AddObjectHelper):
         name="Depth",
         description="Clouds Depth",
         min=0.01, max=100.0,
+        default=10.0,
+    )
+    scale: FloatProperty(
+        name="Scale",
+        description="Scale of cloud texture within volume",
+        min=0.01, max=100.0,
+        default=5.0,
+    )
+    time_rate: FloatProperty(
+        name="Time Rate",
+        description="Rate of change within cloud texture",
+        min=0.01, max=100.0,
         default=1.0,
+    )
+    wind_rate: FloatProperty(
+        name="Wind Rate",
+        description="Rate of change within cloud texture",
+        min=0.01, max=100.0,
+        default=1.0,
+    )
+    wind_direction: FloatVectorProperty(
+        name = "Wind Direction",
+        description="Direction cloud texture will move within the volume",
+        default=[3.0,2.0,1.0],
     )
 
     def execute(self, context):
@@ -115,6 +139,7 @@ class AddClouds(bpy.types.Operator, AddObjectHelper):
         scriptNode = nodes.new('ShaderNodeScript')
         scriptNode.location = (-300,0)
         scriptNode.script = bpy.data.texts["turbulence.osl"]
+        scriptNode.inputs[4].default_value = self.scale
 
         colorRampNode = nodes.new(type="ShaderNodeValToRGB")
         colorRampNode.color_ramp.elements[0].color = (0, 0, 0, 1)
@@ -142,19 +167,18 @@ class AddClouds(bpy.types.Operator, AddObjectHelper):
         mat = bpy.data.materials.get(mat_name)
         cloudObject.data.materials.append(mat)
         cloudObject.data.materials[0] = mat
-        
-        
-
 
         # Add keyframes to clouds
-        runtime = 1
-        fps = 60
+        
+        time_rate = self.time_rate
+        wind_rate = self.wind_rate
+        wind_direction = self.wind_direction
+        runtime = 10
+        fps = 24
+        
+        lastFrame = int(runtime * fps)
         bpy.context.scene.frame_start = 0
-        bpy.context.scene.frame_end = int(runtime * fps) + 1
-
-        # loop frames and insert keyframes every 10th frame
-        keyframe_freq = 10
-        lastFrame = bpy.context.scene.frame_end
+        bpy.context.scene.frame_end = lastFrame
         
         # Add procedural animation over time to cloud texture
         # 
@@ -168,13 +192,13 @@ class AddClouds(bpy.types.Operator, AddObjectHelper):
         scriptNode.inputs[3].keyframe_insert("default_value")
 
         # Last frame
-        bpy.context.scene.frame_set(lastFrame - 1)
+        bpy.context.scene.frame_set(lastFrame)
         # Set time value of texture
-        scriptNode.inputs[1].default_value = 1
+        scriptNode.inputs[1].default_value = runtime / 1000 * time_rate
         scriptNode.inputs[1].keyframe_insert("default_value")
         # Set 3D translation of texture within the volume
-        translation = [1, 0.5, 0.1] * runtime
-        scriptNode.inputs[3].default_value = translation
+        wind_rate *= runtime / 10
+        scriptNode.inputs[3].default_value = [-x * wind_rate for x in wind_direction]
         scriptNode.inputs[3].keyframe_insert("default_value")
 
         # Set to linear interpolation
@@ -208,5 +232,4 @@ if __name__ == "__main__":
     register()
 
     # test call
-    
-    bpy.ops.mesh.primitive_clouds_add()
+    # bpy.ops.mesh.primitive_clouds_add()
